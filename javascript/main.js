@@ -66,11 +66,29 @@ d3.json("data/us.json", function(error, us) {
 d3.select("#selectAllButoon").on("click", function(){select_all();});
 d3.select("#clearAllButton").on("click", function(){clear_all();});
 
-yearSlider.callback(function(){ sliderValue = yearSlider.value(); showSliderValue()});
+yearSlider.callback(function(){ sliderValue = yearSlider.value(); updateYear()});
 
-function showSliderValue(){
-d3.select("#population-box").text(sliderValue);
+function updateYear(){
+  clear_all_selected_counties();
+  update_all_selected_countes();
+  redraw();
 }
+
+function clear_all_selected_counties(){
+    features.forEach(function(d){
+      if(selected_counties.has(d.id)){
+        assign(d,null,0);
+      }
+   });
+  }
+
+  function update_all_selected_countes(){
+    features.forEach(function(d){
+      if(selected_counties.has(d.id)){
+         assign(d,find_color(d),0);
+       }
+    });
+  }
 
 /////////////////////////////////////////
 
@@ -79,11 +97,21 @@ d3.select("#population-box").text(sliderValue);
   function find_color(feature){
     var ratio = NaN;
     var c;
-    elections.forEach(function(d){
-      if(d.id == feature.id){
-        ratio = (parseInt(d.gop_1984) - parseInt(d.dem_1984)) / parseInt(d.total_1984)*100;
-      }
-    });
+
+    if(counties.has(parseInt(feature.id))){
+      var total_val = counties.get(parseInt(feature.id)).get(sliderValue).total;
+      var gop_val = counties.get(parseInt(feature.id)).get(sliderValue).gop;
+      var dem_val = counties.get(parseInt(feature.id)).get(sliderValue).dem;
+
+      ratio = (gop_val - dem_val)/total_val*100;
+      d3.select("#population-box").text(dem_val);
+    }
+
+    // elections.forEach(function(d){
+    //   if(d.id == feature.id){
+    //     ratio = (parseInt(d.gop_1984) - parseInt(d.dem_1984)) / parseInt(d.total_1984)*100;
+    //   }
+    // });
 
     if(ratio == NaN){c = null;}
     else if(ratio > 40){c = 0;}
@@ -105,30 +133,30 @@ d3.select("#population-box").text(sliderValue);
 
     selectedColor = find_color(feature);
 
-    if (assign(feature, dragColor = feature.color === selectedColor ? null : selectedColor)) redraw();
+    if (assign(feature, dragColor = feature.color === selectedColor ? null : selectedColor, 1)) redraw();
   }
 
   function drag() {
     var feature = d3.event.sourceEvent.target.__data__;
     if(dragColor!==null){dragColor = find_color(feature);}
-    if (assign(feature, dragColor)) redraw();
+    if (assign(feature, dragColor, 1)) redraw();
   }
 
 
-  function assign(feature, color) {
-    if (feature.color === null && color === null) return false;
-    if (feature.color !== null && color !== null) return false;
-    if (feature.color !== null) {
-      var component = components[feature.color];
-      component.splice(bisectId(component, feature.id), 1);
-      feature.color = null;
-      selected_counties.remove(feature.id)
-    }
+  function assign(feature, color, z) {
+    if (feature.color === color) return false;
+
     else if (color !== null) {
       var component = components[color];
       component.splice(bisectId(component, feature.id), 0, feature);
       feature.color = color;
-      selected_counties.add(feature.id);
+      if(z){selected_counties.add(feature.id);}
+    }
+    else if (feature.color !== null) {
+      var component = components[feature.color];
+      component.splice(bisectId(component, feature.id), 1);
+      feature.color = null;
+      if(z){selected_counties.remove(feature.id);}
     }
 
     return true;
@@ -145,14 +173,14 @@ d3.select("#population-box").text(sliderValue);
 
      features.forEach(function(d){
           selectedColor = find_color(d);
-          assign(d,selectedColor);
+          assign(d,selectedColor,1);
      });
      redraw();
   }
 
   function clear_all(){
       features.forEach(function(d){
-          assign(d,null);
+          assign(d,null,1);
      });
       redraw();
     }
