@@ -12,18 +12,15 @@ var projection = d3.geo.albersUsa()
 var path = d3.geo.path()
     .projection(projection);
 
-
+//set of counties which are currently selected
 var selected_counties = d3.set();
 
+//color scale for counties
 var color = d3.scale.ordinal().domain(d3.range(10)).range(["#67001f", "#b2182b", "#d6604d", "#f4a582", "#fddbc7", "#d1e5f0", "#92c5de", "#4393c3", "#2166ac", "#053061"]),
     selectedColor = 0,
     dragColor;
 
 var components = color.domain().map(function() { return []; });
-
-
-
-
 var svg = d3.select("#svg");
 
 
@@ -32,6 +29,7 @@ d3.json("data/us.json", function(error, us) {
 
   var bisectId = d3.bisector(function(d) { return d.id; }).left;
 
+  //set of the physical JSON counties
   var features = topojson.feature(us, us.objects.counties).features;
 
   svg.append("path")
@@ -63,11 +61,15 @@ d3.json("data/us.json", function(error, us) {
 
 ////////////////////////////////////////////////////////
 
-d3.select("#selectAllButoon").on("click", function(){select_all();});
+//call selectAll and clearAll functions when buttons are pressed
+d3.select("#selectAllButton").on("click", function(){select_all();});
 d3.select("#clearAllButton").on("click", function(){clear_all();});
 
+//call updateYear when slider is changed
 yearSlider.callback(function(){ sliderValue = yearSlider.value(); updateYear()});
 
+
+//clear all selected counties and recolor them with speicified year
 function updateYear(){
   clear_all_selected_counties();
   update_all_selected_countes();
@@ -94,6 +96,7 @@ function clear_all_selected_counties(){
 
   redraw();
 
+  //find proper color for a county
   function find_color(feature){
     var ratio = NaN;
     var c;
@@ -106,12 +109,6 @@ function clear_all_selected_counties(){
       ratio = (gop_val - dem_val)/total_val*100;
       d3.select("#population-box").text(dem_val);
     }
-
-    // elections.forEach(function(d){
-    //   if(d.id == feature.id){
-    //     ratio = (parseInt(d.gop_1984) - parseInt(d.dem_1984)) / parseInt(d.total_1984)*100;
-    //   }
-    // });
 
     if(ratio == NaN){c = null;}
     else if(ratio > 40){c = 0;}
@@ -128,6 +125,7 @@ function clear_all_selected_counties(){
     return c;
   }
 
+  //runs when a county is clicked
   function dragstart() {
     var feature = d3.event.sourceEvent.target.__data__;
 
@@ -136,13 +134,14 @@ function clear_all_selected_counties(){
     if (assign(feature, dragColor = feature.color === selectedColor ? null : selectedColor, 1)) redraw();
   }
 
+  //runs when pressed mouse moves over a different county
   function drag() {
     var feature = d3.event.sourceEvent.target.__data__;
     if(dragColor!==null){dragColor = find_color(feature);}
     if (assign(feature, dragColor, 1)) redraw();
   }
 
-
+  //changes the assigned colors of counties
   function assign(feature, color, z) {
     if (feature.color === color) return false;
 
@@ -162,13 +161,13 @@ function clear_all_selected_counties(){
     return true;
   }
 
+  //physially redraws the map
   function redraw() {
     var f = d3.format(",");
-
     highlight.data(components).attr("d", function(d) { return path({type: "FeatureCollection", features: d}) || "M0,0"; });
-
   }
 
+  //select all counties
   function select_all(){
 
      features.forEach(function(d){
@@ -178,6 +177,7 @@ function clear_all_selected_counties(){
      redraw();
   }
 
+  //clear all counties
   function clear_all(){
       features.forEach(function(d){
           assign(d,null,1);

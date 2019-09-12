@@ -1,3 +1,5 @@
+//this js file reads the datafiles and turns them into usable data structures
+
 var elections = [];
 
 class year{
