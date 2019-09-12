@@ -1,0 +1,33 @@
+path {
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.background {
+  fill: none;
+  stroke: #ddd;
+}
+
+.foreground {
+  fill: none;
+  pointer-events: all;
+}
+
+.state-button {
+  width: 38px;
+  height: 20px;
+  color: black;
+}
+
+.state-button-box{
+  width: 960px;
+  height: 60px;
+}
+
+.state-text{
+  height: 20px;
+}
+
+#sliderBox{
+  height: 100px;
+}
