@@ -7,6 +7,7 @@
 <script src="javascript/d3.v3.min.js"></script>
 <script src="javascript/topojson.v1.min.js"></script>
 <script src="javascript/d3.slider.js"></script>
+
 <script>
 
 var elections = [];
@@ -21,7 +22,7 @@ class year{
 
 function poop(){
   return new Promise(function (resolve, reject) {
-    d3.tsv("elections.tsv", function(data){
+    d3.tsv("data/elections.tsv", function(data){
       // do shit
 
       elections = data;
@@ -94,7 +95,7 @@ d3.select('#sliderBox').call(yearSlider);
 
 //////////////////////////////////////////////////////////
 
-d3.json("us.json", function(error, us) {
+d3.json("data/us.json", function(error, us) {
   if (error) throw error;
 
   var bisectId = d3.bisector(function(d) { return d.id; }).left;
